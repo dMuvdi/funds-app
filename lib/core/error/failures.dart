@@ -35,6 +35,5 @@ class BelowMinimumFailure extends Failure {
 
 /// Generic unexpected error
 class UnexpectedFailure extends Failure {
-  const UnexpectedFailure([String message = 'Ocurrió un error inesperado'])
-    : super(message);
+  const UnexpectedFailure([super.message = 'Ocurrió un error inesperado']);
 }

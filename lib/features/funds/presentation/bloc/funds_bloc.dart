@@ -71,7 +71,6 @@ class FundsBloc extends Bloc<FundsEvent, FundsState> {
     FundSubscribed event,
     Emitter<FundsState> emit,
   ) async {
-    print('🔵 Starting subscription process...');
     emit(
       state.copyWith(
         isProcessingAction: true,
@@ -79,30 +78,25 @@ class FundsBloc extends Bloc<FundsEvent, FundsState> {
         clearActionSuccessMessage: true,
       ),
     );
-    print('🔵 State emitted: isProcessingAction = true');
 
     final result = await subscribeToFund(
       fund: event.fund,
       amount: event.amount,
       channel: event.channel,
     );
-    print('🔵 Subscription result received');
 
     // Check if the result is a failure
     if (result.isLeft()) {
       final failure = result.fold((l) => l, (_) => throw UnimplementedError());
-      print('🔴 Subscription failed: ${failure.message}');
       emit(state.copyWith(isProcessingAction: false, actionFailure: failure));
       return;
     }
 
     // Success case - refetch data
-    print('✅ Subscription successful, fetching updated data...');
     final balanceResult = await getBalance();
     final subsResult = await getActiveSubscriptions();
     final txsResult = await getTransactions();
 
-    print('✅ Data fetched, emitting new state...');
     emit(
       state.copyWith(
         isProcessingAction: false,
@@ -114,7 +108,6 @@ class FundsBloc extends Bloc<FundsEvent, FundsState> {
         actionSuccessMessage: 'Notificación enviada por ${event.channel.label}',
       ),
     );
-    print('✅ State emitted: isProcessingAction = false, success message set');
   }
 
   Future<void> _onSubscriptionCancelled(

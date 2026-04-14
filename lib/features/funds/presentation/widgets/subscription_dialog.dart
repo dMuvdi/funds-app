@@ -50,21 +50,14 @@ class SubscriptionDialog extends StatefulWidget {
           child: BlocListener<FundsBloc, FundsState>(
             listenWhen: (previous, current) {
               // Only listen when processing state changes
-              print(
-                '🔔 Desktop Dialog listenWhen: prevProcessing=${previous.isProcessingAction}, currProcessing=${current.isProcessingAction}',
-              );
               return previous.isProcessingAction !=
                       current.isProcessingAction ||
                   previous.actionSuccessMessage != current.actionSuccessMessage;
             },
             listener: (listenerContext, state) {
-              print(
-                '🔔 Desktop Dialog listener: isProcessing=${state.isProcessingAction}, success=${state.actionSuccessMessage}',
-              );
               // Close dialog on successful subscription
               if (!state.isProcessingAction &&
                   state.actionSuccessMessage != null) {
-                print('✅ Closing desktop dialog...');
                 Navigator.of(dialogContext).pop();
               }
             },
@@ -95,21 +88,14 @@ class SubscriptionDialog extends StatefulWidget {
           child: BlocListener<FundsBloc, FundsState>(
             listenWhen: (previous, current) {
               // Only listen when processing state changes
-              print(
-                '🔔 Mobile Dialog listenWhen: prevProcessing=${previous.isProcessingAction}, currProcessing=${current.isProcessingAction}',
-              );
               return previous.isProcessingAction !=
                       current.isProcessingAction ||
                   previous.actionSuccessMessage != current.actionSuccessMessage;
             },
             listener: (listenerContext, state) {
-              print(
-                '🔔 Mobile Dialog listener: isProcessing=${state.isProcessingAction}, success=${state.actionSuccessMessage}',
-              );
               // Close dialog on successful subscription
               if (!state.isProcessingAction &&
                   state.actionSuccessMessage != null) {
-                print('✅ Closing mobile dialog...');
                 Navigator.of(dialogContext).pop();
               }
             },
