@@ -4,7 +4,7 @@ A production-quality Flutter web/mobile application for managing BTG Pactual inv
 
 ## 🚀 Live Demo
 
-[https://dwqf7ntqiz330.cloudfront.net](https://dwqf7ntqiz330.cloudfront.net)
+[https://dwqf7ntqiz330.cloudfront.net/](https://dwqf7ntqiz330.cloudfront.net/)
 
 ## 📱 Features
 
