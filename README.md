@@ -4,7 +4,7 @@ A production-quality Flutter web/mobile application for managing BTG Pactual inv
 
 ## 🚀 Live Demo
 
-[https://funds-app-strg.s3-website-us-east-1.amazonaws.com](https://funds-app-strg.s3-website-us-east-1.amazonaws.com) *(Update with actual URL after deployment)*
+[https://dwqf7ntqiz330.cloudfront.net](https://dwqf7ntqiz330.cloudfront.net)
 
 ## 📱 Features
 
