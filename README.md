@@ -37,8 +37,6 @@ The application follows Clean Architecture with clear layer separation:
 - **Domain** → No dependencies (pure business logic)
 - **Core** → Shared utilities (no feature dependencies)
 
-See [docs/02_ARCHITECTURE.md](docs/02_ARCHITECTURE.md) for detailed structure.
-
 ## 🚦 Getting Started
 
 ### Prerequisites
