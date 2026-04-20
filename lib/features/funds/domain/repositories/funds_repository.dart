@@ -22,4 +22,6 @@ abstract class FundsRepository {
   });
 
   Future<Either<Failure, Unit>> cancel(String subscriptionId);
+
+  Future<Either<Failure, Unit>> resetState();
 }

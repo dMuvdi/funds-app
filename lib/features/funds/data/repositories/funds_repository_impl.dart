@@ -88,4 +88,14 @@ class FundsRepositoryImpl implements FundsRepository {
       return const Left(UnexpectedFailure());
     }
   }
+
+  @override
+  Future<Either<Failure, Unit>> resetState() async {
+    try {
+      await dataSource.reset();
+      return const Right(unit);
+    } catch (e) {
+      return const Left(UnexpectedFailure());
+    }
+  }
 }

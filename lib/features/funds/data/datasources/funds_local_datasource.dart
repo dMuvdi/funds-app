@@ -89,6 +89,12 @@ class FundsLocalDataSource {
     return sub;
   }
 
+  Future<void> reset() async {
+    _balance = _initialBalance;
+    _activeSubscriptions.clear();
+    _transactions.clear();
+  }
+
   /// Cancel a subscription
   /// Throws [SubscriptionNotFoundException] if subscription not found
   Future<void> cancel(String subscriptionId) async {
