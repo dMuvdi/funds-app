@@ -8,13 +8,14 @@ A production-quality Flutter web/mobile application for managing BTG Pactual inv
 
 ## 📱 Features
 
-- **Browse Funds**: View all available FPV (Voluntary Pension Funds) and FIC (Collective Investment Funds)
-- **Subscribe**: Invest in funds with minimum amount validation and balance checking
-- **Manage Subscriptions**: View active subscriptions and cancel when needed
-- **Transaction History**: Track all subscription and cancellation activities
-- **Notification Preferences**: Choose between Email or SMS notifications
+- **Browse Funds**: View all available FPV (Voluntary Pension Funds) and FIC (Collective Investment Funds) in a responsive table (desktop) or card list (mobile)
+- **Subscribe**: Invest in funds with minimum amount validation, quick-amount chips and live balance preview
+- **Manage Subscriptions**: View active subscriptions with canal, amount and date stats; cancel with confirmation
+- **Transaction History**: Track all subscription and cancellation activities with signed amounts
+- **Notification Preferences**: Choose between Email or SMS notifications per subscription
+- **Reset State**: Restore the portfolio to its initial state via the footer control
 - **Responsive Design**: Optimized for both mobile and desktop (breakpoint at 800px)
-- **Real-time Balance**: See your available balance update instantly
+- **Real-time Balance**: Available balance updates instantly after every action
 
 ## 🛠 Tech Stack
 
@@ -25,7 +26,7 @@ A production-quality Flutter web/mobile application for managing BTG Pactual inv
 - **Routing**: go_router (^14.2.7)
 - **Functional Programming**: dartz (^0.10.1) for error handling
 - **UI**: google_fonts (^6.2.1), Material Design 3
-- **Formatting**: intl (^0.19.0) for Colombian Peso formatting
+- **Formatting**: intl (^0.19.0) for Colombian Peso and Spanish date formatting
 - **Testing**: mockito (^5.4.4), bloc_test (^9.1.7)
 
 ## 🏗 Architecture
@@ -89,25 +90,38 @@ flutter analyze
 
 ## 🎨 Design System
 
-The app follows a modern fintech design language with professional aesthetics:
+The app follows a modern fintech design language inspired by high-end portfolio management interfaces:
 
-- **Primary Color**: Modern Navy (#1A1F36)
-- **Accent Color**: Vibrant Orange (#FF6B35)
-- **Typography**: Poppins (text/UI), Nunito (numbers/currency)
-- **Spacing**: 4pt grid system (xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48)
-- **Components**: Material Design 3, rounded corners (8-16px), modern shadows, gradient accents
+- **Background**: Warm cream (`#F6F4EE`)
+- **Foreground**: Near-black ink (`#111114` / `#2A2A30`)
+- **Accent**: Electric green (`#4ADE80`) — used for FIC badges and allocation donut
+- **Danger**: `#DC2626` for cancellation actions
+- **Typography**:
+  - **Instrument Serif** — hero amounts, modal titles
+  - **Inter** — all body and UI text
+  - **JetBrains Mono** — IDs, kickers, meta labels, currency axis
+- **Spacing**: 4pt grid system (`xs: 4`, `sm: 8`, `md: 16`, `lg: 24`, `xl: 32`, `xxl: 48`)
+- **Radius**: `sm: 6`, `md: 10`, `lg: 14`, `xl: 20`
+- **Components**: pill badges, segmented controls, ghost/primary buttons, `CustomPainter` charts
+
+### Charts (no external chart library)
+
+- **Sparkline** (`SparklinePainter`): 30-day balance curve with filled gradient area and mono axis labels
+- **Allocation Donut** (`AllocationDonut`): three-arc breakdown of FPV / FIC / Available drawn with `CustomPainter`
 
 ### Responsive Breakpoints
 
-- **Mobile**: < 800px (single column, bottom sheet dialogs, vertical statistics cards)
-- **Desktop**: >= 800px (7:5 column split, modal dialogs, horizontal statistics cards)
+- **Mobile**: < 800px — hero stacks vertically, funds collapse to cards, subscription modal becomes a bottom sheet
+- **Desktop**: ≥ 800px — hero row (1.55 : 1 ratio), two-column panel grid, funds displayed in table with hover rows
 
-### Dashboard Features
+### Dashboard Layout
 
-- **Statistics Cards**: Fondos Disponibles, Suscripciones Activas, Total Invertido with icon badges
-- **Professional Layout**: Section headers, improved spacing, organized activity panels
-- **Balance Card**: Orange gradient header with real-time balance updates
-- **Responsive Panels**: Active subscriptions and transaction history with proper mobile padding
+- **Topbar**: brand block (serif "Funds" + mono subtitle) + user chip (avatar, name, ID)
+- **Hero**: `HeroBalanceCard` with sparkline + `AllocationCard` with donut and legend
+- **Panel 01 — Oportunidades**: segmented filter (`Todos / FPV / FIC`), desktop table / mobile cards
+- **Panel 02 — En curso**: active subscriptions with canal, amount and date stats per item
+- **Panel 03 — Historial**: signed activity rows with circular type icon and mono timestamp
+- **Footer**: "Restablecer" button → confirmation dialog → `StateReset` event → toast
 
 ## 🔒 Known Limitations
 
@@ -141,11 +155,11 @@ Pushes to `main` branch trigger the deployment workflow. See [.github/workflows/
 
 Comprehensive test coverage includes:
 
-- **Unit Tests**: Currency formatter, repository implementation, use cases
-- **Bloc Tests**: State management with bloc_test (14 tests passing)
-- **Widget Tests**: Fund card rendering and interactions
+- **Unit Tests**: Currency formatter, repository implementation, use cases (including `ResetState`)
+- **Bloc Tests**: Full state machine coverage — `FundsStarted`, `FundSubscribed`, `SubscriptionCancelled`, `StateReset`
+- **Widget Tests**: 21 tests across `HeroBalanceCard`, `AllocationCard`, `CategoryBadge`, `EmptyState`, `SegmentedControl`, `ActiveSubscriptionsPanel`, `TransactionHistoryPanel`
 
-All tests verified with instant state updates and proper async/await handling.
+All 40 tests pass with `flutter test`. Code analysis is clean with `flutter analyze`.
 
 ## 🤝 Contributing
 
