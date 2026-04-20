@@ -1,179 +1,179 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
+import 'app_spacing.dart';
 
-/// Modern, clean app theme
 class AppTheme {
   AppTheme._();
 
   static ThemeData get light => ThemeData(
     useMaterial3: true,
-    primaryColor: AppColors.primary,
-    scaffoldBackgroundColor: AppColors.background,
+    primaryColor: AppColors.ink,
+    scaffoldBackgroundColor: AppColors.paper,
     colorScheme: const ColorScheme.light(
-      primary: AppColors.primary,
+      primary: AppColors.ink,
       secondary: AppColors.accent,
-      surface: AppColors.surface,
-      error: AppColors.error,
-      onPrimary: AppColors.textOnPrimary,
-      onSecondary: AppColors.textOnAccent,
+      surface: AppColors.card,
+      error: AppColors.danger,
+      onPrimary: Colors.white,
+      onSecondary: Colors.white,
     ),
-    textTheme: GoogleFonts.poppinsTextTheme(),
+    textTheme: GoogleFonts.interTextTheme(),
 
-    // Modern AppBar
     appBarTheme: AppBarTheme(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.paper,
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       shadowColor: AppColors.shadowLight,
-      iconTheme: const IconThemeData(color: AppColors.textPrimary),
-      titleTextStyle: GoogleFonts.poppins(
-        color: AppColors.textPrimary,
+      iconTheme: const IconThemeData(color: AppColors.ink),
+      titleTextStyle: GoogleFonts.inter(
+        color: AppColors.ink,
         fontSize: 20,
         fontWeight: FontWeight.w600,
       ),
     ),
 
-    // Modern cards with soft shadows
-    cardTheme: const CardThemeData(
-      color: AppColors.surface,
+    cardTheme: CardThemeData(
+      color: AppColors.card,
       elevation: 0,
       shadowColor: AppColors.shadowLight,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(16)),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        side: const BorderSide(color: AppColors.line, width: 1),
       ),
     ),
 
-    // Modern elevated buttons
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.accent,
-        foregroundColor: AppColors.textOnAccent,
+        backgroundColor: AppColors.ink,
+        foregroundColor: Colors.white,
         elevation: 0,
         shadowColor: Colors.transparent,
-        minimumSize: const Size.fromHeight(52),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: GoogleFonts.poppins(
-          fontSize: 15,
+        minimumSize: const Size.fromHeight(44),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radius),
+        ),
+        textStyle: GoogleFonts.inter(
+          fontSize: 13,
           fontWeight: FontWeight.w600,
-          letterSpacing: 0.2,
+          letterSpacing: -0.005,
         ),
       ),
     ),
 
-    // Modern outlined buttons
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primary,
-        side: const BorderSide(color: AppColors.surfaceDark, width: 1.5),
-        minimumSize: const Size.fromHeight(48),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: GoogleFonts.poppins(
-          fontSize: 14,
+        foregroundColor: AppColors.ink,
+        side: const BorderSide(color: AppColors.lineStrong, width: 1),
+        minimumSize: const Size.fromHeight(40),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radius),
+        ),
+        textStyle: GoogleFonts.inter(
+          fontSize: 13,
           fontWeight: FontWeight.w600,
+          letterSpacing: -0.005,
         ),
       ),
     ),
 
-    // Text buttons
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: AppColors.textSecondary,
-        textStyle: GoogleFonts.poppins(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
+        foregroundColor: AppColors.muted,
+        textStyle: GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
         ),
       ),
     ),
 
-    // Modern input fields
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.surfaceAlt,
+      fillColor: AppColors.card,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.circular(AppSpacing.radius),
+        borderSide: const BorderSide(color: AppColors.lineStrong, width: 1),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.surfaceDark, width: 1),
+        borderRadius: BorderRadius.circular(AppSpacing.radius),
+        borderSide: const BorderSide(color: AppColors.lineStrong, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.accent, width: 2),
+        borderRadius: BorderRadius.circular(AppSpacing.radius),
+        borderSide: const BorderSide(color: AppColors.ink, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.error, width: 1),
+        borderRadius: BorderRadius.circular(AppSpacing.radius),
+        borderSide: const BorderSide(color: AppColors.danger, width: 1),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.error, width: 2),
+        borderRadius: BorderRadius.circular(AppSpacing.radius),
+        borderSide: const BorderSide(color: AppColors.danger, width: 1.5),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      labelStyle: GoogleFonts.poppins(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: AppColors.textSecondary,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      labelStyle: GoogleFonts.inter(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: AppColors.ink,
       ),
-      hintStyle: GoogleFonts.poppins(
+      hintStyle: GoogleFonts.inter(
         fontSize: 14,
-        color: AppColors.textTertiary,
+        color: AppColors.muted2,
       ),
     ),
 
-    // Modern snackbars
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
-      backgroundColor: AppColors.textPrimary,
-      contentTextStyle: GoogleFonts.poppins(
-        fontSize: 14,
+      backgroundColor: AppColors.ink,
+      contentTextStyle: GoogleFonts.inter(
+        fontSize: 13,
         fontWeight: FontWeight.w500,
-        color: AppColors.textOnPrimary,
+        color: Colors.white,
       ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(999),
+      ),
+      width: 320,
     ),
 
-    // Modern tabs
     tabBarTheme: TabBarThemeData(
-      labelColor: AppColors.accent,
-      unselectedLabelColor: AppColors.textSecondary,
-      indicatorColor: AppColors.accent,
+      labelColor: AppColors.ink,
+      unselectedLabelColor: AppColors.muted,
+      indicatorColor: AppColors.ink,
       indicatorSize: TabBarIndicatorSize.label,
-      labelStyle: GoogleFonts.poppins(
-        fontSize: 14,
+      labelStyle: GoogleFonts.inter(
+        fontSize: 12,
         fontWeight: FontWeight.w600,
       ),
-      unselectedLabelStyle: GoogleFonts.poppins(
-        fontSize: 14,
+      unselectedLabelStyle: GoogleFonts.inter(
+        fontSize: 12,
         fontWeight: FontWeight.w500,
       ),
     ),
 
-    // Modern dividers
     dividerTheme: const DividerThemeData(
-      color: AppColors.surfaceDark,
+      color: AppColors.line,
       thickness: 1,
       space: 1,
     ),
 
-    // Modern dialogs
     dialogTheme: DialogThemeData(
-      backgroundColor: AppColors.surface,
-      elevation: 8,
+      backgroundColor: AppColors.card,
+      elevation: 0,
       shadowColor: AppColors.shadowMedium,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      titleTextStyle: GoogleFonts.poppins(
-        fontSize: 20,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+      ),
+      titleTextStyle: GoogleFonts.inter(
+        fontSize: 18,
         fontWeight: FontWeight.w600,
-        color: AppColors.textPrimary,
+        color: AppColors.ink,
       ),
     ),
 
-    // Progress indicators
     progressIndicatorTheme: const ProgressIndicatorThemeData(
-      color: AppColors.accent,
+      color: AppColors.ink,
     ),
   );
 }

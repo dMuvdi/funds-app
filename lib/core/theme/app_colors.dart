@@ -1,53 +1,62 @@
 import 'package:flutter/material.dart';
 
-/// Modern, clean color palette inspired by contemporary fintech design
 class AppColors {
   AppColors._();
 
-  // Brand colors - softer, more modern
-  static const Color primary = Color(0xFF1A1F36); // Deep navy (softer)
-  static const Color primaryLight = Color(0xFF2D3446);
-  static const Color accent = Color(0xFFFF6B35); // Vibrant orange
-  static const Color accentLight = Color(0xFFFF8C61);
-  static const Color accentSoft = Color(0xFFFFF3EF);
+  // Surfaces
+  static const Color paper = Color(0xFFF6F4EE);
+  static const Color paper2 = Color(0xFFEFEDE6);
+  static const Color card = Color(0xFFFFFFFF);
 
-  // Surfaces - clean and modern
-  static const Color background = Color(0xFFFAFAFC); // Very light gray
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceAlt = Color(0xFFF5F6FA);
-  static const Color surfaceDark = Color(0xFFF0F1F5);
+  // Ink / text
+  static const Color ink = Color(0xFF111114);
+  static const Color ink2 = Color(0xFF2A2A30);
+  static const Color muted = Color(0xFF6B6B74);
+  static const Color muted2 = Color(0xFF8E8E98);
 
-  // Text colors
-  static const Color textPrimary = Color(0xFF1A1F36);
-  static const Color textSecondary = Color(0xFF6B7280);
-  static const Color textTertiary = Color(0xFF9CA3AF);
+  // Dividers
+  static const Color line = Color(0x14111114); // rgba(17,17,20,0.08)
+  static const Color lineStrong = Color(0x29111114); // rgba(17,17,20,0.16)
+
+  // Accent — electric green
+  static const Color accent = Color(0xFF4ADE80);
+  static const Color accentInk = Color(0xFF15803D);
+  static const Color accentSoft = Color(0xFFDCFCE7);
+
+  // Danger
+  static const Color danger = Color(0xFFDC2626);
+  static const Color dangerSoft = Color(0xFFFEE2E2);
+
+  // Warning
+  static const Color warn = Color(0xFFF59E0B);
+
+  // Category pills
+  static const Color fpvBadgeBg = Color(0x0F111114); // ink at 6% opacity
+  static const Color fpvBadgeFg = Color(0xFF111114);
+  static const Color ficBadgeBg = Color(0xFFDCFCE7);
+  static const Color ficBadgeFg = Color(0xFF15803D);
+
+  // Legacy aliases used by existing widgets / theme
+  static const Color primary = ink;
+  static const Color primaryLight = ink2;
+  static const Color background = paper;
+  static const Color surface = card;
+  static const Color surfaceAlt = paper2;
+  static const Color surfaceDark = lineStrong;
+  static const Color textPrimary = ink;
+  static const Color textSecondary = muted;
+  static const Color textTertiary = muted2;
   static const Color textOnPrimary = Color(0xFFFFFFFF);
   static const Color textOnAccent = Color(0xFFFFFFFF);
-
-  // Semantic colors - modern palette
-  static const Color success = Color(0xFF10B981); // Modern green
-  static const Color successLight = Color(0xFFD1FAE5);
-  static const Color error = Color(0xFFEF4444); // Modern red
-  static const Color errorLight = Color(0xFFFEE2E2);
-  static const Color warning = Color(0xFFF59E0B); // Amber
+  static const Color success = accent;
+  static const Color successLight = accentSoft;
+  static const Color error = danger;
+  static const Color errorLight = dangerSoft;
+  static const Color warning = warn;
   static const Color warningLight = Color(0xFFFEF3C7);
-  static const Color info = Color(0xFF3B82F6); // Blue
+  static const Color info = Color(0xFF3B82F6);
   static const Color infoLight = Color(0xFFDCECFE);
-
-  // Category badges - modern, soft colors
-  static const Color fpvBadgeBg = Color(0xFFECF3FF);
-  static const Color fpvBadgeFg = Color(0xFF2563EB);
-  static const Color ficBadgeBg = Color(0xFFFFF7ED);
-  static const Color ficBadgeFg = Color(0xFFEA580C);
-
-  // Chart colors
-  static const Color chart1 = Color(0xFFFF6B35);
-  static const Color chart2 = Color(0xFF4ECDC4);
-  static const Color chart3 = Color(0xFFF7B731);
-  static const Color chart4 = Color(0xFF5F27CD);
-
-  // Overlays and shadows
-  static const Color overlay = Color(0x40000000);
-  static const Color shadowLight = Color(0x0D000000);
-  static const Color shadowMedium = Color(0x1A000000);
+  static const Color overlay = Color(0x800A0A0F);
+  static const Color shadowLight = Color(0x0A111114);
+  static const Color shadowMedium = Color(0x1F111114);
 }
