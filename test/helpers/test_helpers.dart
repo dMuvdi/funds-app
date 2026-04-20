@@ -6,6 +6,7 @@ import 'package:amaris_technical_test/features/funds/domain/usecases/get_active_
 import 'package:amaris_technical_test/features/funds/domain/usecases/get_transactions.dart';
 import 'package:amaris_technical_test/features/funds/domain/usecases/subscribe_to_fund.dart';
 import 'package:amaris_technical_test/features/funds/domain/usecases/cancel_subscription.dart';
+import 'package:amaris_technical_test/features/funds/domain/usecases/reset_state.dart';
 
 @GenerateMocks([
   FundsRepository,
@@ -15,5 +16,6 @@ import 'package:amaris_technical_test/features/funds/domain/usecases/cancel_subs
   GetTransactions,
   SubscribeToFund,
   CancelSubscription,
+  ResetState,
 ])
 void main() {}

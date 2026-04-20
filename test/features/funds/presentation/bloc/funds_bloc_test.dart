@@ -20,6 +20,7 @@ void main() {
   late MockGetTransactions mockGetTransactions;
   late MockSubscribeToFund mockSubscribeToFund;
   late MockCancelSubscription mockCancelSubscription;
+  late MockResetState mockResetState;
 
   setUp(() {
     mockGetFunds = MockGetFunds();
@@ -28,6 +29,7 @@ void main() {
     mockGetTransactions = MockGetTransactions();
     mockSubscribeToFund = MockSubscribeToFund();
     mockCancelSubscription = MockCancelSubscription();
+    mockResetState = MockResetState();
 
     bloc = FundsBloc(
       getFunds: mockGetFunds,
@@ -36,6 +38,7 @@ void main() {
       getTransactions: mockGetTransactions,
       subscribeToFund: mockSubscribeToFund,
       cancelSubscription: mockCancelSubscription,
+      resetState: mockResetState,
     );
   });
 
@@ -155,6 +158,85 @@ void main() {
   });
 
   group('SubscriptionCancelled', () {
-    // Simplified - removed complex async test
+    blocTest<FundsBloc, FundsState>(
+      'emits [processing, failure] when cancel fails',
+      build: () {
+        when(
+          mockCancelSubscription(any),
+        ).thenAnswer(
+          (_) async => const Left(UnexpectedFailure('Not found')),
+        );
+        return bloc;
+      },
+      act: (bloc) => bloc.add(const SubscriptionCancelled('sub_123')),
+      expect: () => [
+        isA<FundsState>().having(
+          (s) => s.isProcessingAction,
+          'isProcessingAction',
+          true,
+        ),
+        isA<FundsState>()
+            .having((s) => s.isProcessingAction, 'isProcessingAction', false)
+            .having((s) => s.actionFailure, 'actionFailure', isNotNull),
+      ],
+    );
+  });
+
+  group('StateReset', () {
+    blocTest<FundsBloc, FundsState>(
+      'emits [processing, ready] with reset balance and empty lists on success',
+      build: () {
+        when(mockResetState()).thenAnswer((_) async => const Right(unit));
+        when(
+          mockGetBalance(),
+        ).thenAnswer((_) async => const Right(500000.0));
+        when(
+          mockGetActiveSubscriptions(),
+        ).thenAnswer((_) async => const Right(<Subscription>[]));
+        when(
+          mockGetTransactions(),
+        ).thenAnswer((_) async => const Right(<Transaction>[]));
+        return bloc;
+      },
+      act: (bloc) => bloc.add(const StateReset()),
+      expect: () => [
+        isA<FundsState>().having(
+          (s) => s.isProcessingAction,
+          'isProcessingAction',
+          true,
+        ),
+        isA<FundsState>()
+            .having((s) => s.isProcessingAction, 'isProcessingAction', false)
+            .having((s) => s.balance, 'balance', 500000.0)
+            .having((s) => s.activeSubscriptions, 'activeSubscriptions', isEmpty)
+            .having((s) => s.transactions, 'transactions', isEmpty)
+            .having(
+              (s) => s.actionSuccessMessage,
+              'actionSuccessMessage',
+              'Estado restablecido',
+            ),
+      ],
+    );
+
+    blocTest<FundsBloc, FundsState>(
+      'calls resetState use case exactly once',
+      build: () {
+        when(mockResetState()).thenAnswer((_) async => const Right(unit));
+        when(
+          mockGetBalance(),
+        ).thenAnswer((_) async => const Right(500000.0));
+        when(
+          mockGetActiveSubscriptions(),
+        ).thenAnswer((_) async => const Right(<Subscription>[]));
+        when(
+          mockGetTransactions(),
+        ).thenAnswer((_) async => const Right(<Transaction>[]));
+        return bloc;
+      },
+      act: (bloc) => bloc.add(const StateReset()),
+      verify: (_) {
+        verify(mockResetState()).called(1);
+      },
+    );
   });
 }

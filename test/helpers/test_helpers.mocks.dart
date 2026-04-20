@@ -26,6 +26,8 @@ import 'package:amaris_technical_test/features/funds/domain/usecases/get_funds.d
     as _i10;
 import 'package:amaris_technical_test/features/funds/domain/usecases/get_transactions.dart'
     as _i13;
+import 'package:amaris_technical_test/features/funds/domain/usecases/reset_state.dart'
+    as _i16;
 import 'package:amaris_technical_test/features/funds/domain/usecases/subscribe_to_fund.dart'
     as _i14;
 import 'package:dartz/dartz.dart' as _i2;
@@ -162,6 +164,19 @@ class MockFundsRepository extends _i1.Mock implements _i3.FundsRepository {
               _FakeEither_0<_i5.Failure, _i2.Unit>(
                 this,
                 Invocation.method(#cancel, [subscriptionId]),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.Either<_i5.Failure, _i2.Unit>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, _i2.Unit>> resetState() =>
+      (super.noSuchMethod(
+            Invocation.method(#resetState, []),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i2.Unit>>.value(
+              _FakeEither_0<_i5.Failure, _i2.Unit>(
+                this,
+                Invocation.method(#resetState, []),
               ),
             ),
           )
@@ -382,6 +397,39 @@ class MockCancelSubscription extends _i1.Mock
               _FakeEither_0<_i5.Failure, _i2.Unit>(
                 this,
                 Invocation.method(#call, [subscriptionId]),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.Either<_i5.Failure, _i2.Unit>>);
+}
+
+/// A class which mocks [ResetState].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockResetState extends _i1.Mock implements _i16.ResetState {
+  MockResetState() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.FundsRepository get repository =>
+      (super.noSuchMethod(
+            Invocation.getter(#repository),
+            returnValue: _FakeFundsRepository_1(
+              this,
+              Invocation.getter(#repository),
+            ),
+          )
+          as _i3.FundsRepository);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, _i2.Unit>> call() =>
+      (super.noSuchMethod(
+            Invocation.method(#call, []),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i2.Unit>>.value(
+              _FakeEither_0<_i5.Failure, _i2.Unit>(
+                this,
+                Invocation.method(#call, []),
               ),
             ),
           )
