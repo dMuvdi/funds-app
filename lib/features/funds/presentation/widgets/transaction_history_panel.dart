@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../domain/entities/transaction.dart';
 
-/// Modern panel displaying transaction history
 class TransactionHistoryPanel extends StatelessWidget {
   final List<Transaction> transactions;
 
@@ -16,78 +14,109 @@ class TransactionHistoryPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (transactions.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(AppSpacing.xl),
-        child: EmptyState(
-          icon: Icons.receipt_long_outlined,
-          title: 'Sin movimientos',
-          subtitle: 'Sin movimientos todavía',
-        ),
+      return const EmptyState(
+        icon: Icons.access_time_outlined,
+        title: 'Sin movimientos',
+        subtitle: 'Tus suscripciones y cancelaciones aparecerán aquí.',
       );
     }
 
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: transactions.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
-      itemBuilder: (context, index) {
-        final tx = transactions[index];
-        final isSubscription = tx.type == TransactionType.subscription;
+    return Column(
+      children: List.generate(transactions.length, (i) {
+        final tx = transactions[i];
+        final isLast = i == transactions.length - 1;
+        return _ActivityRow(tx: tx, isLast: isLast);
+      }),
+    );
+  }
+}
 
-        return ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 0,
-            vertical: AppSpacing.md,
-          ),
-          leading: Container(
-            padding: const EdgeInsets.all(8),
+class _ActivityRow extends StatelessWidget {
+  final Transaction tx;
+  final bool isLast;
+
+  const _ActivityRow({required this.tx, required this.isLast});
+
+  @override
+  Widget build(BuildContext context) {
+    final isSub = tx.type == TransactionType.subscription;
+    final dotBg = isSub ? AppColors.paper2 : AppColors.accentSoft;
+    final dotFg = isSub ? AppColors.ink : AppColors.accentInk;
+    final amountColor = isSub ? AppColors.ink : AppColors.accentInk;
+    final sign = isSub ? '−' : '+';
+
+    final meta = DateFormat('dd MMM yyyy · HH:mm', 'es').format(tx.timestamp);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: isLast
+          ? null
+          : const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: AppColors.line, width: 1),
+              ),
+            ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 28,
+            height: 28,
             decoration: BoxDecoration(
-              color: isSubscription
-                  ? AppColors.error.withValues(alpha: 0.1)
-                  : AppColors.success.withValues(alpha: 0.1),
+              color: dotBg,
               shape: BoxShape.circle,
             ),
             child: Icon(
-              isSubscription ? Icons.arrow_downward : Icons.arrow_upward,
-              color: isSubscription ? AppColors.error : AppColors.success,
-              size: 20,
+              isSub ? Icons.arrow_downward : Icons.arrow_upward,
+              size: 14,
+              color: dotFg,
             ),
           ),
-          title: Text(
-            tx.fund.name,
-            style: AppTypography.titleMedium.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 4),
-              Text(
-                DateFormat('dd/MM/yyyy HH:mm').format(tx.timestamp),
-                style: AppTypography.labelMedium.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              if (tx.channel != null)
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  'Canal: ${tx.channel!.label}',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.textTertiary,
+                  isSub ? 'Suscripción · ' : 'Cancelación · ',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.muted,
                   ),
                 ),
-            ],
-          ),
-          trailing: Text(
-            '${isSubscription ? '-' : '+'} ${formatCop(tx.amount)}',
-            style: AppTypography.numberBody.copyWith(
-              color: isSubscription ? AppColors.error : AppColors.success,
-              fontWeight: FontWeight.w700,
+                Text(
+                  tx.fund.name,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.ink,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  meta,
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 10,
+                    color: AppColors.muted2,
+                    letterSpacing: 0.02,
+                  ),
+                ),
+              ],
             ),
           ),
-        );
-      },
+          const SizedBox(width: 8),
+          Text(
+            '$sign ${formatCop(tx.amount)}',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: amountColor,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
