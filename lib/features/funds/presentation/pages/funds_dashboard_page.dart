@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/theme/app_typography.dart';
-import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../../../core/widgets/balance_card.dart';
+import '../../../../core/widgets/segmented.dart';
 import '../bloc/funds_bloc.dart';
 import '../bloc/funds_event.dart';
 import '../bloc/funds_state.dart';
 import '../widgets/active_subscriptions_panel.dart';
+import '../widgets/allocation_card.dart';
 import '../widgets/fund_card.dart';
+import '../widgets/funds_table.dart';
+import '../widgets/hero_balance_card.dart';
 import '../widgets/subscription_dialog.dart';
 import '../widgets/transaction_history_panel.dart';
 
-/// Professional funds dashboard with modern layout
 class FundsDashboardPage extends StatelessWidget {
   const FundsDashboardPage({super.key});
 
@@ -22,30 +23,19 @@ class FundsDashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocConsumer<FundsBloc, FundsState>(
       listener: (context, state) {
-        // Show snackbar for action failures
         if (state.actionFailure != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.actionFailure!.message),
-              backgroundColor: AppColors.error,
-              action: SnackBarAction(
-                label: 'Cerrar',
-                textColor: AppColors.textOnPrimary,
-                onPressed: () {
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                },
-              ),
+              backgroundColor: AppColors.danger,
               duration: const Duration(seconds: 4),
             ),
           );
         }
-
-        // Show snackbar for action success
         if (state.actionSuccessMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.actionSuccessMessage!),
-              backgroundColor: AppColors.success,
               duration: const Duration(seconds: 3),
             ),
           );
@@ -53,60 +43,19 @@ class FundsDashboardPage extends StatelessWidget {
       },
       builder: (context, state) {
         return Scaffold(
-          appBar: _buildAppBar(context, state),
+          backgroundColor: AppColors.paper,
+          appBar: _Topbar(),
           body: _buildBody(context, state),
         );
       },
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context, FundsState state) {
-    return AppBar(
-      elevation: 0,
-      toolbarHeight: 72,
-      title: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.account_balance_wallet_rounded,
-              color: AppColors.accent,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Fondos de Inversión',
-                style: AppTypography.headlineMedium.copyWith(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Text(
-                'Gestiona tus inversiones',
-                style: AppTypography.labelMedium.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildBody(BuildContext context, FundsState state) {
     if (state.status == FundsStatus.loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.ink),
+      );
     }
 
     if (state.status == FundsStatus.error) {
@@ -117,34 +66,38 @@ class FundsDashboardPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.1),
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: AppColors.dangerSoft,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.error_outline_rounded,
-                  size: 64,
-                  color: AppColors.error,
+                  Icons.error_outline,
+                  size: 22,
+                  color: AppColors.danger,
                 ),
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: 16),
               Text(
                 'Error al cargar datos',
-                style: AppTypography.headlineMedium,
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.ink,
+                ),
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: 8),
               Text(
                 state.loadFailure?.message ?? 'Ocurrió un problema inesperado',
-                style: AppTypography.bodyMedium,
+                style: GoogleFonts.inter(fontSize: 13, color: AppColors.muted),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: AppSpacing.xl),
-              ElevatedButton.icon(
-                onPressed: () {
-                  context.read<FundsBloc>().add(const FundsStarted());
-                },
-                icon: const Icon(Icons.refresh_rounded),
+              const SizedBox(height: 24),
+              OutlinedButton.icon(
+                onPressed: () =>
+                    context.read<FundsBloc>().add(const FundsStarted()),
+                icon: const Icon(Icons.refresh, size: 16),
                 label: const Text('Reintentar'),
               ),
             ],
@@ -153,468 +106,624 @@ class FundsDashboardPage extends StatelessWidget {
       );
     }
 
-    final desktop = isDesktop(context);
-
-    if (desktop) {
-      return _buildDesktopLayout(context, state);
-    } else {
-      return _buildMobileLayout(context, state);
-    }
+    return isDesktop(context)
+        ? _DesktopLayout(state: state)
+        : _MobileLayout(state: state);
   }
+}
 
-  Widget _buildDesktopLayout(BuildContext context, FundsState state) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Balance Card
-            Row(children: [BalanceCard(balance: state.balance)]),
-            const SizedBox(height: AppSpacing.xl),
+// ─── Topbar ─────────────────────────────────────────────────────────────────
 
-            // Statistics Overview Section
-            _buildStatisticsSection(state),
-            const SizedBox(height: AppSpacing.xl),
+class _Topbar extends StatelessWidget implements PreferredSizeWidget {
+  @override
+  Size get preferredSize => const Size.fromHeight(64);
 
-            // Main Content Grid
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Left Column - Funds List
-                Expanded(
-                  flex: 7,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionHeader(
-                        'Fondos Disponibles',
-                        'Explora y suscríbete a fondos de inversión',
-                        Icons.trending_up_rounded,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      _buildFundsList(context, state),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.xl),
-
-                // Right Column - Activity Panel
-                Expanded(
-                  flex: 5,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionHeader(
-                        'Tu Actividad',
-                        'Suscripciones y movimientos',
-                        Icons.history_rounded,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      _buildActivityPanel(context, state),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMobileLayout(BuildContext context, FundsState state) {
-    return CustomScrollView(
-      slivers: [
-        // Balance Card Header
-        SliverToBoxAdapter(
-          child: Container(
-            color: AppColors.surface,
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: BalanceCard(balance: state.balance),
-          ),
-        ),
-
-        // Statistics Section
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.md,
-            ),
-            child: _buildMobileStatisticsSection(state),
-          ),
-        ),
-
-        const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
-
-        // Funds Section Header
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: _buildSectionHeader(
-              'Fondos Disponibles',
-              'Explora y suscríbete',
-              Icons.trending_up_rounded,
-            ),
-          ),
-        ),
-
-        const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
-
-        // Funds List
-        SliverList(
-          delegate: SliverChildBuilderDelegate((context, index) {
-            final fund = state.funds[index];
-            return Padding(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                0,
-                AppSpacing.lg,
-                index == state.funds.length - 1 ? AppSpacing.lg : 0,
-              ),
-              child: FundCard(
-                fund: fund,
-                onSubscribe: () =>
-                    _showSubscriptionDialog(context, state, fund),
-              ),
-            );
-          }, childCount: state.funds.length),
-        ),
-
-        // Activity Section
-        SliverToBoxAdapter(
-          child: Container(
-            margin: const EdgeInsets.only(top: AppSpacing.md),
-            decoration: const BoxDecoration(
-              color: AppColors.surface,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.shadowLight,
-                  blurRadius: 8,
-                  offset: Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: _buildSectionHeader(
-                    'Tu Actividad',
-                    'Suscripciones y movimientos',
-                    Icons.history_rounded,
-                  ),
-                ),
-                DefaultTabController(
-                  length: 2,
-                  child: Column(
-                    children: [
-                      const TabBar(
-                        tabs: [
-                          Tab(
-                            icon: Icon(
-                              Icons.check_circle_outline_rounded,
-                              size: 20,
-                            ),
-                            text: 'Activos',
-                          ),
-                          Tab(
-                            icon: Icon(Icons.receipt_long_outlined, size: 20),
-                            text: 'Historial',
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 350,
-                        child: TabBarView(
-                          children: [
-                            SingleChildScrollView(
-                              child: ActiveSubscriptionsPanel(
-                                subscriptions: state.activeSubscriptions,
-                                onCancel: (id) => context.read<FundsBloc>().add(
-                                  SubscriptionCancelled(id),
-                                ),
-                                isProcessing: state.isProcessingAction,
-                              ),
-                            ),
-                            SingleChildScrollView(
-                              child: TransactionHistoryPanel(
-                                transactions: state.transactions,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFundsList(BuildContext context, FundsState state) {
-    return Column(
-      children: List.generate(state.funds.length, (index) {
-        final fund = state.funds[index];
-        return FundCard(
-          fund: fund,
-          onSubscribe: () => _showSubscriptionDialog(context, state, fund),
-        );
-      }),
-    );
-  }
-
-  Widget _buildActivityPanel(BuildContext context, FundsState state) {
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.surfaceDark, width: 1),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.shadowLight,
-            blurRadius: 12,
-            offset: Offset(0, 2),
-          ),
-        ],
+      height: 64,
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      decoration: const BoxDecoration(
+        color: AppColors.paper,
+        border: Border(bottom: BorderSide(color: AppColors.line)),
       ),
-      child: DefaultTabController(
-        length: 2,
-        child: Column(
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: AppColors.surfaceDark, width: 1),
-                ),
-              ),
-              child: const TabBar(
-                tabs: [
-                  Tab(
-                    icon: Icon(Icons.check_circle_outline_rounded, size: 20),
-                    text: 'Activos',
-                  ),
-                  Tab(
-                    icon: Icon(Icons.receipt_long_outlined, size: 20),
-                    text: 'Historial',
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 600,
-              child: TabBarView(
-                children: [
-                  SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      child: ActiveSubscriptionsPanel(
-                        subscriptions: state.activeSubscriptions,
-                        onCancel: (id) => context.read<FundsBloc>().add(
-                          SubscriptionCancelled(id),
-                        ),
-                        isProcessing: state.isProcessingAction,
-                      ),
-                    ),
-                  ),
-                  SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      child: TransactionHistoryPanel(
-                        transactions: state.transactions,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatisticsSection(FundsState state) {
-    final totalInvested = state.activeSubscriptions.fold(
-      0.0,
-      (sum, sub) => sum + sub.amount,
-    );
-
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            'Fondos Disponibles',
-            '${state.funds.length}',
-            Icons.account_balance_rounded,
-            AppColors.accent,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _buildStatCard(
-            'Suscripciones Activas',
-            '${state.activeSubscriptions.length}',
-            Icons.check_circle_rounded,
-            AppColors.success,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _buildStatCard(
-            'Total Invertido',
-            formatCop(totalInvested),
-            Icons.trending_up_rounded,
-            AppColors.primary,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMobileStatisticsSection(FundsState state) {
-    final totalInvested = state.activeSubscriptions.fold(
-      0.0,
-      (sum, sub) => sum + sub.amount,
-    );
-
-    return Column(
-      children: [
-        _buildStatCard(
-          'Fondos Disponibles',
-          '${state.funds.length}',
-          Icons.account_balance_rounded,
-          AppColors.accent,
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _buildStatCard(
-          'Suscripciones Activas',
-          '${state.activeSubscriptions.length}',
-          Icons.check_circle_rounded,
-          AppColors.success,
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _buildStatCard(
-          'Total Invertido',
-          formatCop(totalInvested),
-          Icons.trending_up_rounded,
-          AppColors.primary,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard(
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.surfaceDark, width: 1),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.shadowLight,
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
+          // Brand
+          const Icon(Icons.show_chart_rounded, size: 22, color: AppColors.ink),
+          const SizedBox(width: 12),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
+              Text(
+                'Funds',
+                style: GoogleFonts.instrumentSerif(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.ink,
+                  letterSpacing: -0.01,
+                  height: 1,
                 ),
-                child: Icon(icon, color: color, size: 20),
               ),
-              const Spacer(),
+              Text(
+                'Gestión de fondos · FPV & FIC',
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 11,
+                  color: AppColors.muted2,
+                  letterSpacing: 0.04,
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            label,
-            style: AppTypography.labelSmall.copyWith(
-              color: AppColors.textSecondary,
+          const Spacer(),
+          // User chip
+          Container(
+            padding: const EdgeInsets.fromLTRB(6, 6, 14, 6),
+            decoration: BoxDecoration(
+              color: AppColors.card,
+              border: Border.all(color: AppColors.line),
+              borderRadius: BorderRadius.circular(999),
             ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            value,
-            style: value.contains('\$')
-                ? AppTypography.numberMedium.copyWith(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                  )
-                : AppTypography.displayMedium.copyWith(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: const BoxDecoration(
+                    color: AppColors.ink,
+                    shape: BoxShape.circle,
                   ),
+                  child: const Center(
+                    child: Text(
+                      'CB',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cliente Fondos',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.ink,
+                        height: 1.2,
+                      ),
+                    ),
+                    Text(
+                      'ID · 000-4821',
+                      style: GoogleFonts.jetBrainsMono(
+                        fontSize: 10,
+                        color: AppColors.muted2,
+                        letterSpacing: 0.04,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildSectionHeader(String title, String subtitle, IconData icon) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppColors.accent.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: AppColors.accent, size: 22),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
+// ─── Desktop Layout ──────────────────────────────────────────────────────────
+
+class _DesktopLayout extends StatelessWidget {
+  final FundsState state;
+  const _DesktopLayout({required this.state});
+
+  double get _fpvInvested => state.activeSubscriptions
+      .where((s) => s.fund.category.name == 'fpv')
+      .fold(0.0, (sum, s) => sum + s.amount);
+
+  double get _ficInvested => state.activeSubscriptions
+      .where((s) => s.fund.category.name == 'fic')
+      .fold(0.0, (sum, s) => sum + s.amount);
+
+  @override
+  Widget build(BuildContext context) {
+    final invested = _fpvInvested + _ficInvested;
+
+    return SingleChildScrollView(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1440),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(40, 28, 40, 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: AppTypography.headlineSmall),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: AppTypography.labelMedium.copyWith(
-                  color: AppColors.textSecondary,
+              // Hero row
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      flex: 155,
+                      child: HeroBalanceCard(
+                        balance: state.balance,
+                        invested: invested,
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      flex: 100,
+                      child: AllocationCard(
+                        fpvAmount: _fpvInvested,
+                        ficAmount: _ficInvested,
+                        available: state.balance,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              const SizedBox(height: 20),
+              // Main grid
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Funds panel (spans 2 rows)
+                  Expanded(
+                    flex: 17,
+                    child: _PanelCard(
+                      kicker: '01 / Oportunidades',
+                      title: 'Fondos disponibles',
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.ink,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          '${state.funds.length}',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      noPadding: true,
+                      child: FundsTable(
+                        funds: state.funds,
+                        onSubscribe: (fund) => SubscriptionDialog.show(
+                          context: context,
+                          fund: fund,
+                          balance: state.balance,
+                          onConfirm: (amount, channel) =>
+                              context.read<FundsBloc>().add(
+                                FundSubscribed(
+                                  fund: fund,
+                                  amount: amount,
+                                  channel: channel,
+                                ),
+                              ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  // Right column: subs + activity stacked
+                  Expanded(
+                    flex: 10,
+                    child: Column(
+                      children: [
+                        _PanelCard(
+                          kicker: '02 / En curso',
+                          title: 'Suscripciones activas',
+                          trailing: _Badge(
+                            '${state.activeSubscriptions.length}',
+                          ),
+                          child: ActiveSubscriptionsPanel(
+                            subscriptions: state.activeSubscriptions,
+                            onCancel: (id) => context.read<FundsBloc>().add(
+                              SubscriptionCancelled(id),
+                            ),
+                            isProcessing: state.isProcessingAction,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        _ActivityPanel(state: state),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+              _Footer(),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Mobile Layout ───────────────────────────────────────────────────────────
+
+class _MobileLayout extends StatefulWidget {
+  final FundsState state;
+  const _MobileLayout({required this.state});
+
+  @override
+  State<_MobileLayout> createState() => _MobileLayoutState();
+}
+
+class _MobileLayoutState extends State<_MobileLayout> {
+  double get _fpvInvested => widget.state.activeSubscriptions
+      .where((s) => s.fund.category.name == 'fpv')
+      .fold(0.0, (sum, s) => sum + s.amount);
+
+  double get _ficInvested => widget.state.activeSubscriptions
+      .where((s) => s.fund.category.name == 'fic')
+      .fold(0.0, (sum, s) => sum + s.amount);
+
+  @override
+  Widget build(BuildContext context) {
+    final invested = _fpvInvested + _ficInvested;
+    final state = widget.state;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          HeroBalanceCard(balance: state.balance, invested: invested),
+          const SizedBox(height: 16),
+          AllocationCard(
+            fpvAmount: _fpvInvested,
+            ficAmount: _ficInvested,
+            available: state.balance,
+          ),
+          const SizedBox(height: 16),
+
+          // Funds panel
+          _PanelCard(
+            kicker: '01 / Oportunidades',
+            title: 'Fondos disponibles',
+            trailing: _Badge('${state.funds.length}'),
+            child: Column(
+              children: state.funds.map((f) => FundCard(
+                fund: f,
+                onSubscribe: () => SubscriptionDialog.show(
+                  context: context,
+                  fund: f,
+                  balance: state.balance,
+                  onConfirm: (amount, channel) =>
+                      context.read<FundsBloc>().add(
+                        FundSubscribed(
+                          fund: f,
+                          amount: amount,
+                          channel: channel,
+                        ),
+                      ),
+                ),
+              )).toList(),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Active subs
+          _PanelCard(
+            kicker: '02 / En curso',
+            title: 'Suscripciones activas',
+            trailing: _Badge('${state.activeSubscriptions.length}'),
+            child: ActiveSubscriptionsPanel(
+              subscriptions: state.activeSubscriptions,
+              onCancel: (id) =>
+                  context.read<FundsBloc>().add(SubscriptionCancelled(id)),
+              isProcessing: state.isProcessingAction,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Activity
+          _ActivityPanel(state: state),
+          const SizedBox(height: 24),
+          _Footer(),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Shared Widgets ──────────────────────────────────────────────────────────
+
+class _PanelCard extends StatelessWidget {
+  final String kicker;
+  final String title;
+  final Widget? trailing;
+  final Widget child;
+  final bool noPadding;
+
+  const _PanelCard({
+    required this.kicker,
+    required this.title,
+    this.trailing,
+    required this.child,
+    this.noPadding = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        border: Border.all(color: AppColors.line),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      ),
+      clipBehavior: Clip.hardEdge,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        kicker,
+                        style: GoogleFonts.jetBrainsMono(
+                          fontSize: 10,
+                          color: AppColors.muted2,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        title,
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.ink,
+                          letterSpacing: -0.01,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (trailing != null) trailing!,
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          noPadding
+              ? child
+              : Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
+                  child: child,
+                ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActivityPanel extends StatefulWidget {
+  final FundsState state;
+  const _ActivityPanel({required this.state});
+
+  @override
+  State<_ActivityPanel> createState() => _ActivityPanelState();
+}
+
+class _ActivityPanelState extends State<_ActivityPanel> {
+  int _filterIndex = 0;
+
+  List get _filtered {
+    if (_filterIndex == 1) {
+      return widget.state.transactions
+          .where((t) => t.type.name == 'subscription')
+          .toList();
+    }
+    if (_filterIndex == 2) {
+      return widget.state.transactions
+          .where((t) => t.type.name == 'cancellation')
+          .toList();
+    }
+    return widget.state.transactions;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        border: Border.all(color: AppColors.line),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      ),
+      clipBehavior: Clip.hardEdge,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '03 / Historial',
+                        style: GoogleFonts.jetBrainsMono(
+                          fontSize: 10,
+                          color: AppColors.muted2,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Movimientos',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.ink,
+                          letterSpacing: -0.01,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SegmentedControl(
+                  options: const ['Todos', 'Susc.', 'Cancel.'],
+                  selectedIndex: _filterIndex,
+                  onChanged: (i) => setState(() => _filterIndex = i),
+                  small: true,
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+            child: TransactionHistoryPanel(
+              transactions: List.from(_filtered),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  final String label;
+  const _Badge(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 24),
+      height: 24,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: AppColors.ink,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Center(
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Footer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(
+          'Funds App · Prueba técnica',
+          style: GoogleFonts.jetBrainsMono(
+            fontSize: 11,
+            color: AppColors.muted2,
+            letterSpacing: 0.02,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text('·',
+            style: GoogleFonts.jetBrainsMono(
+              fontSize: 11,
+              color: AppColors.muted2,
+            )),
+        const SizedBox(width: 8),
+        Text(
+          'Saldo inicial COP \$500.000 · Datos en memoria',
+          style: GoogleFonts.jetBrainsMono(
+            fontSize: 11,
+            color: AppColors.muted2,
+            letterSpacing: 0.02,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text('·',
+            style: GoogleFonts.jetBrainsMono(
+              fontSize: 11,
+              color: AppColors.muted2,
+            )),
+        const SizedBox(width: 8),
+        GestureDetector(
+          onTap: () => _confirmReset(context),
+          child: Text(
+            'Restablecer',
+            style: GoogleFonts.jetBrainsMono(
+              fontSize: 11,
+              color: AppColors.ink,
+              decoration: TextDecoration.underline,
+              decorationColor: AppColors.ink,
+              letterSpacing: 0.02,
+            ),
           ),
         ),
       ],
     );
   }
 
-  void _showSubscriptionDialog(BuildContext context, FundsState state, fund) {
-    SubscriptionDialog.show(
+  Future<void> _confirmReset(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
       context: context,
-      fund: fund,
-      balance: state.balance,
-      onConfirm: (amount, channel) {
-        context.read<FundsBloc>().add(
-          FundSubscribed(fund: fund, amount: amount, channel: channel),
-        );
-        // Don't close immediately - let the dialog close itself after processing
-        // The dialog will listen to bloc state changes via BlocListener
-      },
-      isLoading: state.isProcessingAction,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+        ),
+        title: Text(
+          'Restablecer estado',
+          style: GoogleFonts.instrumentSerif(
+            fontSize: 22,
+            fontWeight: FontWeight.w400,
+            color: AppColors.ink,
+          ),
+        ),
+        content: Text(
+          'Esto devolverá el saldo a \$500.000 COP y eliminará todas las suscripciones y movimientos.',
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            color: AppColors.muted,
+            height: 1.55,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Restablecer'),
+          ),
+        ],
+      ),
     );
+
+    if (confirmed == true && context.mounted) {
+      context.read<FundsBloc>().add(const StateReset());
+    }
   }
 }
