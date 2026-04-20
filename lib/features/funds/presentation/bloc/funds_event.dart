@@ -40,3 +40,8 @@ class SubscriptionCancelled extends FundsEvent {
   @override
   List<Object?> get props => [subscriptionId];
 }
+
+/// Reset all state to initial values
+class StateReset extends FundsEvent {
+  const StateReset();
+}

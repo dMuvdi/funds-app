@@ -4,11 +4,11 @@ import '../../domain/usecases/get_active_subscriptions.dart';
 import '../../domain/usecases/get_balance.dart';
 import '../../domain/usecases/get_funds.dart';
 import '../../domain/usecases/get_transactions.dart';
+import '../../domain/usecases/reset_state.dart';
 import '../../domain/usecases/subscribe_to_fund.dart';
 import 'funds_event.dart';
 import 'funds_state.dart';
 
-/// Bloc for funds dashboard
 class FundsBloc extends Bloc<FundsEvent, FundsState> {
   final GetFunds getFunds;
   final GetBalance getBalance;
@@ -16,6 +16,7 @@ class FundsBloc extends Bloc<FundsEvent, FundsState> {
   final GetTransactions getTransactions;
   final SubscribeToFund subscribeToFund;
   final CancelSubscription cancelSubscription;
+  final ResetState resetState;
 
   FundsBloc({
     required this.getFunds,
@@ -24,10 +25,12 @@ class FundsBloc extends Bloc<FundsEvent, FundsState> {
     required this.getTransactions,
     required this.subscribeToFund,
     required this.cancelSubscription,
+    required this.resetState,
   }) : super(const FundsState()) {
     on<FundsStarted>(_onStarted);
     on<FundSubscribed>(_onFundSubscribed);
     on<SubscriptionCancelled>(_onSubscriptionCancelled);
+    on<StateReset>(_onStateReset);
   }
 
   Future<void> _onStarted(FundsStarted event, Emitter<FundsState> emit) async {
@@ -39,7 +42,6 @@ class FundsBloc extends Bloc<FundsEvent, FundsState> {
       final subsResult = await getActiveSubscriptions();
       final txsResult = await getTransactions();
 
-      // Check if any failed
       if (fundsResult.isLeft() ||
           balanceResult.isLeft() ||
           subsResult.isLeft() ||
@@ -51,7 +53,6 @@ class FundsBloc extends Bloc<FundsEvent, FundsState> {
         return;
       }
 
-      // All succeeded
       emit(
         state.copyWith(
           status: FundsStatus.ready,
@@ -85,14 +86,12 @@ class FundsBloc extends Bloc<FundsEvent, FundsState> {
       channel: event.channel,
     );
 
-    // Check if the result is a failure
     if (result.isLeft()) {
       final failure = result.fold((l) => l, (_) => throw UnimplementedError());
       emit(state.copyWith(isProcessingAction: false, actionFailure: failure));
       return;
     }
 
-    // Success case - refetch data
     final balanceResult = await getBalance();
     final subsResult = await getActiveSubscriptions();
     final txsResult = await getTransactions();
@@ -124,14 +123,12 @@ class FundsBloc extends Bloc<FundsEvent, FundsState> {
 
     final result = await cancelSubscription(event.subscriptionId);
 
-    // Check if the result is a failure
     if (result.isLeft()) {
       final failure = result.fold((l) => l, (_) => throw UnimplementedError());
       emit(state.copyWith(isProcessingAction: false, actionFailure: failure));
       return;
     }
 
-    // Success case - refetch data
     final balanceResult = await getBalance();
     final subsResult = await getActiveSubscriptions();
     final txsResult = await getTransactions();
@@ -145,6 +142,35 @@ class FundsBloc extends Bloc<FundsEvent, FundsState> {
         ),
         transactions: txsResult.getOrElse(() => state.transactions),
         actionSuccessMessage: 'Suscripción cancelada exitosamente',
+      ),
+    );
+  }
+
+  Future<void> _onStateReset(
+    StateReset event,
+    Emitter<FundsState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        isProcessingAction: true,
+        clearActionFailure: true,
+        clearActionSuccessMessage: true,
+      ),
+    );
+
+    await resetState();
+
+    final balanceResult = await getBalance();
+    final subsResult = await getActiveSubscriptions();
+    final txsResult = await getTransactions();
+
+    emit(
+      state.copyWith(
+        isProcessingAction: false,
+        balance: balanceResult.getOrElse(() => 500000),
+        activeSubscriptions: subsResult.getOrElse(() => []),
+        transactions: txsResult.getOrElse(() => []),
+        actionSuccessMessage: 'Estado restablecido',
       ),
     );
   }

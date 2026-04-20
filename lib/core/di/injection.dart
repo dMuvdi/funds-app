@@ -7,6 +7,7 @@ import '../../features/funds/domain/usecases/get_active_subscriptions.dart';
 import '../../features/funds/domain/usecases/get_balance.dart';
 import '../../features/funds/domain/usecases/get_funds.dart';
 import '../../features/funds/domain/usecases/get_transactions.dart';
+import '../../features/funds/domain/usecases/reset_state.dart';
 import '../../features/funds/domain/usecases/subscribe_to_fund.dart';
 import '../../features/funds/presentation/bloc/funds_bloc.dart';
 
@@ -27,6 +28,7 @@ void setupInjection() {
   sl.registerFactory(() => GetTransactions(sl()));
   sl.registerFactory(() => SubscribeToFund(sl()));
   sl.registerFactory(() => CancelSubscription(sl()));
+  sl.registerFactory(() => ResetState(sl()));
 
   // Bloc
   sl.registerFactory(
@@ -37,6 +39,7 @@ void setupInjection() {
       getTransactions: sl(),
       subscribeToFund: sl(),
       cancelSubscription: sl(),
+      resetState: sl(),
     ),
   );
 }
