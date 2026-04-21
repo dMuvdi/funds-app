@@ -84,6 +84,7 @@ class SubscriptionDialog extends StatefulWidget {
         isScrollControlled: true,
         isDismissible: false,
         enableDrag: false,
+        useSafeArea: true,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(AppSpacing.radiusXl),
@@ -93,7 +94,10 @@ class SubscriptionDialog extends StatefulWidget {
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(ctx).viewInsets.bottom,
           ),
-          child: SafeArea(child: SingleChildScrollView(child: wrap(ctx))),
+          child: SafeArea(
+            top: false,
+            child: SingleChildScrollView(child: wrap(ctx)),
+          ),
         ),
       );
     }

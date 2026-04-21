@@ -44,7 +44,7 @@ class FundsDashboardPage extends StatelessWidget {
       builder: (context, state) {
         return Scaffold(
           backgroundColor: AppColors.paper,
-          appBar: _Topbar(),
+          appBar: _Topbar(topPadding: MediaQuery.paddingOf(context).top),
           body: _buildBody(context, state),
         );
       },
@@ -115,14 +115,25 @@ class FundsDashboardPage extends StatelessWidget {
 // ─── Topbar ─────────────────────────────────────────────────────────────────
 
 class _Topbar extends StatelessWidget implements PreferredSizeWidget {
+  const _Topbar({required this.topPadding});
+
+  final double topPadding;
+
   @override
-  Size get preferredSize => const Size.fromHeight(64);
+  Size get preferredSize => Size.fromHeight(64 + topPadding);
 
   @override
   Widget build(BuildContext context) {
+    final mobile = !isDesktop(context);
+    final horizontal = mobile ? 16.0 : 40.0;
+
     return Container(
-      height: 64,
-      padding: const EdgeInsets.symmetric(horizontal: 40),
+      height: 64 + topPadding,
+      padding: EdgeInsets.only(
+        top: topPadding,
+        left: horizontal,
+        right: horizontal,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.paper,
         border: Border(bottom: BorderSide(color: AppColors.line)),
@@ -157,62 +168,82 @@ class _Topbar extends StatelessWidget implements PreferredSizeWidget {
             ],
           ),
           const Spacer(),
-          // User chip
-          Container(
-            padding: const EdgeInsets.fromLTRB(6, 6, 14, 6),
-            decoration: BoxDecoration(
-              color: AppColors.card,
-              border: Border.all(color: AppColors.line),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: const BoxDecoration(
-                    color: AppColors.ink,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'CB',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+          // User avatar — compact on mobile, full chip on desktop
+          if (mobile)
+            Container(
+              width: 28,
+              height: 28,
+              decoration: const BoxDecoration(
+                color: AppColors.ink,
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Text(
+                  'CB',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Cliente Fondos',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.ink,
-                        height: 1.2,
+              ),
+            )
+          else
+            Container(
+              padding: const EdgeInsets.fromLTRB(6, 6, 14, 6),
+              decoration: BoxDecoration(
+                color: AppColors.card,
+                border: Border.all(color: AppColors.line),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: const BoxDecoration(
+                      color: AppColors.ink,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'CB',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                    Text(
-                      'ID · 000-4821',
-                      style: GoogleFonts.jetBrainsMono(
-                        fontSize: 10,
-                        color: AppColors.muted2,
-                        letterSpacing: 0.04,
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Cliente Fondos',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.ink,
+                          height: 1.2,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      Text(
+                        'ID · 000-4821',
+                        style: GoogleFonts.jetBrainsMono(
+                          fontSize: 10,
+                          color: AppColors.muted2,
+                          letterSpacing: 0.04,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -637,7 +668,10 @@ class _Badge extends StatelessWidget {
 class _Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Wrap(
+      spacing: 8,
+      runSpacing: 4,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text(
           'Funds App · Prueba técnica',
@@ -647,13 +681,11 @@ class _Footer extends StatelessWidget {
             letterSpacing: 0.02,
           ),
         ),
-        const SizedBox(width: 8),
         Text('·',
             style: GoogleFonts.jetBrainsMono(
               fontSize: 11,
               color: AppColors.muted2,
             )),
-        const SizedBox(width: 8),
         Text(
           'Saldo inicial COP \$500.000 · Datos en memoria',
           style: GoogleFonts.jetBrainsMono(
@@ -662,13 +694,11 @@ class _Footer extends StatelessWidget {
             letterSpacing: 0.02,
           ),
         ),
-        const SizedBox(width: 8),
         Text('·',
             style: GoogleFonts.jetBrainsMono(
               fontSize: 11,
               color: AppColors.muted2,
             )),
-        const SizedBox(width: 8),
         GestureDetector(
           onTap: () => _confirmReset(context),
           child: Text(
